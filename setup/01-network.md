@@ -18,13 +18,15 @@ Created a VPC with CIDR block 10.0.0.0/16 (~65,000 private addresses from the RF
 
 I left "VPC encryption control" off: it's a paid feature (AWS marks it with a ($)) and unnecessary for this project. Lesson learned early: read AWS's ($) markers like street signs.
 
-📸 [screenshot: vpc-details.png] — VPC console → Your VPCs → click bloombrew-vpc. Capture the details panel showing the name, VPC ID, and the 10.0.0.0/16 CIDR.
+![VPC details](images/vpc-details.png)
+
 
 2. Subnet — bloombrew-public-subnet
 
 Carved a 10.0.1.0/24 subnet (256 addresses) out of the VPC's range, in availability zone us-east-1a. The subnet CIDR must sit inside the parent VPC CIDR — the console shows both fields stacked (IPv4 VPC CIDR block = the parent /16, IPv4 subnet CIDR block = my slice), which confused me for a minute until the parent/slice relationship clicked.
 
-📸 [screenshot: subnet-details.png] — VPC console → Subnets → click bloombrew-public-subnet. Capture the details showing the CIDR 10.0.1.0/24, the AZ, and (bottom tabs) the Route table tab showing it's associated with bloombrew-public-rt — that association is what makes this subnet "public."
+![Subnet details with route table](images/subnet-details.png)
+
 
 3. Internet Gateway — bloombrew-igw
 
@@ -32,7 +34,8 @@ Created an internet gateway and attached it to the VPC. The IGW is the door betw
 
 Honest note: I initially named this bloombrew-public-rt — the route table's name — because I was creating several objects in a row and crossed my wires. I only noticed when the page title looked wrong. Fixed in seconds via Manage tags, but it taught me that AWS "names" are just editable tags, and naming discipline matters when resources multiply.
 
-📸 [screenshot: igw-attached.png] — VPC console → Internet gateways → click bloombrew-igw. Capture the details showing State: Attached and the VPC ID it's attached to.
+![Internet gateway attached](images/igw-attached.png)
+
 
 4. Route Table — bloombrew-public-rt
 
@@ -46,9 +49,10 @@ Destination	Target	Meaning
 
 This step is the answer to "what makes a subnet public": a subnet is public when it's associated with a route table that has a route to an internet gateway. Before I saved the association, the console showed my subnet pointing at the VPC's default "Main" route table (no internet route); after saving, it pointed at mine. I watched the subnet become public.
 
-📸 [screenshot: route-table-routes.png] — VPC console → Route tables → bloombrew-public-rt → Routes tab. Capture both routes (local + 0.0.0.0/0 → igw).
+![Route table routes](images/route-table-routes.png)
 
-📸 [screenshot: route-table-associations.png] — Same page → Subnet associations tab. Capture bloombrew-public-subnet listed as explicitly associated.
+![Route table subnet associations](images/route-table-associations.png)
+
 
 5. Security Group — bloombrew-web-sg
 
@@ -64,7 +68,7 @@ AWS showed its yellow "0.0.0.0/0 allows all IP addresses" warning on this page. 
 
 Two things I learned on this screen: security groups are stateful (allowed-in traffic's replies are automatically allowed out — no reply rules needed) and deny-by-default (any port not explicitly opened is closed). And the create form has three description fields — one required for the whole group, plus an optional one per rule — which I discovered by filling in the wrong one first.
 
-📸 [screenshot: security-group-rules.png] — EC2 console → Security Groups → bloombrew-web-sg → Inbound rules tab. Capture both rules with their sources. (Cropping tip: your /32 rule shows your home IP — fine to blur it if you prefer, though a home IP in a screenshot is low-risk.)
+![Security group inbound rules](images/security-group-rules.png)
 
 CIDR sizes I used today, smallest to biggest slash
 
